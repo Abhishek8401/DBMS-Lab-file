@@ -1,0 +1,624 @@
+﻿Lab Works:-
+
+SECTION 1:-
+
+
+-- CREATE DATABASE NAME DBDA:-
+
+create database dac_dbt;
+
+-- SELECT THE DATABASE DBDA:-
+
+use dac_dbt;
+
+-- CREATE TABLE DEPT:-
+
+create table dept(deptcode varchar(15), deptname varchar(60), budget   integer);
+
+-- CREATE TABLE GRADE:-
+
+create table grade(gradecode varchar(15), gradelevel varchar(30), gradedescription 
+varchar(60), basic integer);
+
+-- CREATE TABLE DESIGN:-
+
+create table desig(desigcode varchar(15), designame varchar(15));
+
+-- CREATE TABLE EMPLOYEE:-
+
+create table emp(empcode varchar(15), empname varchar(60), deptcode varchar(15),birthdate date not null, joindate date not null, sex char(1) check (sex in ('M', 'F', 'T')),desigcode varchar(15), supcode varchar(15), gradecode 
+varchar(15),gradelevel varchar(30), basicpay integer);
+
+-- CREATE TABLE SALARY:-
+
+create table salary(empcode varchar(15), salmonth date not null, basic integer,  allow integer, deduct integer);
+
+-- CREATE TABLE HISTORY:-
+
+create table history(empcode varchar(15), changedate date not null, desigcode  varchar(15), gradecode varchar(15), gradelevel varchar(30), basicpay integer);
+
+-- DEPT ADD PRIMARY KEY (DEPTCODE):-
+
+alter table dept
+add primary key (deptcode);
+describe dept;
+
+-- DESIG ADD PRIMARY KEY(DESIGCODE):-
+
+alter table desig
+add primary key (desigcode);
+describe desig;
+
+--  EMP ADD PRIMARY KEY (EMPCODE):-
+
+alter table emp
+add primary key (empcode);
+describe emp;
+
+--  SALARY ADD PRIMARY KEY (EMPCODE, SALMONTH):-
+
+alter table salary
+add primary key (empcode,salmonth);
+describe salary;
+
+--  HISTORY ADD PRIMARY KEY (EMPCODE, CHANGEDATE, DESIGCODE, GRADECODE, GRADELEVEL):-
+
+alter table history
+add primary key (empcode, changedate, desigcode, gradecode, gradelevel);
+describe history;
+
+--  GRADE ADD PRIMARY KEY (GRADECODE, GRADELEVEL):-
+
+alter table grade
+add primary key (gradecode, gradelevel);
+
+
+-- EMP ADD FOREIGN KEY (DEPTCODE) REFERENCES DEPT(DEPTCODE):-
+
+alter table emp
+add foreign key (deptcode) references dept(deptcode);
+describe salary;
+
+-- EMP ADD FOREIGN KEY (DESIGCODE) REFERENCES DESIG(DESIGCODE):-
+
+alter table emp
+add foreign key (desigcode) references desig(desigcode);
+ 
+describe desig;
+
+--  EMP ADD FOREIGN KEY (SUPCODE) REFERENCES EMP(EMPCODE):-
+
+alter table emp
+add foreign key (supcode) references emp(empcode);
+
+describe emp;
+
+--  EMP ADD FOREIGN KEY (GRADECODE, GRADELEVEL) REFERENCES GRADE (GRADECODE,GRADELEVEL):-
+
+alter table emp
+add foreign key (gradecode, gradelevel) references grade(gradecode,gradelevel);
+
+describe emp;
+
+
+
+
+--  HISTORY ADD FOREIGN KEY (EMPCODE) REFERENCES EMP (EMPCODE):-
+
+alter table history
+add foreign key (empcode) references emp(empcode);
+describe history;
+
+-- HISTORY ADD FOREIGN KEY (DESIGCODE) REFERENCES DESIG(DESIGCODE):-
+
+alter table history
+add foreign key (desigcode) references desig(desigcode);
+
+
+--  HISTORY ADD FOREIGN KEY (GRADECODE, GRADELEVEL) REFERENCES GRADE(GRADECODE, GRADELEVEL):-
+
+alter table history
+add foreign key (gradecode,gradelevel) references grade(gradecode,gradelevel);
+
+
+
+
+SECTION-2:-
+
+
+ -- Q1 List the name, employee code and designation of each employee of the office.
+
+ SELECT empname,empcode,designame
+ from emp
+ left join desig
+ on emp.desigcode=desig.desigcode;
+  
+ -- Q2 list all the departments and the budgets
+
+select deptname,budget from dept;
+
+-- Q3 list the employees and their respective department names
+
+select empname,deptname
+from emp
+left join dept
+on emp.deptcode=dept.deptcode;
+
+-- Q4 list the employess who are not having any superior to work under
+
+select * from emp;
+select * from emp
+where supcode  is null;
+
+-- Q5 List the employees who are working directly under superior most employee of theoffice. (Assume the superior most employee is the employee who does not have asupervisor)
+
+(select empname,desigcode from emp where supcode='7839');
+
+
+
+ -- Q6 list the employees who is senior most in the office
+
+SELECT empcode,empname,joindate
+FROM emp
+WHERE joindate = (SELECT MIN(joindate) FROM emp)
+limit 1;
+
+--  Q7 List the employees who will retire from the office next
+
+select empname from emp
+where curdate()-birthdate/365 > 60;
+
+--  Q8 List the departments with the respective department managers
+
+select * from dept;
+SELECT d.deptcode, d.deptname, e.empname AS department_manager
+FROM dept d
+LEFT JOIN emp e ON d.deptcode = e.deptcode AND e.desigcode = 'MNGR'
+;
+
+-- Q9 List the employees who work as ‘manager’ to at least one department.
+
+SELECT *
+FROM emp
+WHERE desigcode = 'MNGR';
+
+-- Q10.  List the number of employees working for either ‘accounts’ or ‘personal’ or ‘purchase’ departments
+
+SELECT COUNT(*) AS num_employees
+FROM emp e
+JOIN dept d ON e.deptcode = d.deptcode
+WHERE d.deptname IN ('accounts', 'personal', 'purchase');
+
+-- Q11 List the employees working for ‘accounts’ or ‘personal’ department
+
+select empname
+from emp
+join dept on emp.deptcode = dept.deptcode
+where dept.deptname in ('accounts','personal');
+
+-- Q12 . List the employees working for ‘accounts’ and ‘personal’ department
+
+SELECT emp.empcode, emp.empname, dept.deptname
+FROM emp
+JOIN dept ON emp.deptcode = dept.deptcode
+WHERE dept.deptname IN ('Accounts','Personal');
+select * from emp;
+
+
+-- Q13  List the employees working for ‘accounts’ but not for ‘personal’ department
+
+
+SELECT empcode, empname, dept.deptcode
+FROM emp 
+JOIN dept  ON emp.deptcode = dept.deptcode 
+where dept.deptname='accounts' and not dept.deptname='personal';
+
+-- Q14  List the youngest employee of the office
+
+select empname,timestampdiff(year,birthdate,curdate()) as age
+from emp
+order by age asc
+limit 1;
+
+-- Q15 . List the employees who are drawing basic pay not equal to 12400.
+
+select empname
+from emp
+where basicpay!=12400;
+
+-- Q16 List the employees who are drawing basic salary between 11000 and 12000
+
+select empname from emp where basicpay between 11000 and 12000;
+
+-- Q17 List the employees who are drawing basic salary not between 11000 and 12000
+
+select empname
+from emp
+where basicpay not between 11000 and 12000;
+
+-- Q18  List the employees who got salary allowance between Rs.1000 to Rs.1500 in the month of January 2012.
+
+select * from salary;
+select distinct empname,allow
+from emp
+join salary
+on emp.empcode=salary.empcode where allow between 1000 and 1500;
+
+-- Q19 . List the employees whose name ends with ‘i’ or ‘y’.
+
+SELECT *
+FROM emp
+WHERE empname LIKE '%i' OR empname LIKE '%y';
+
+-- Q20  List the employees who have atleast 25 years of experience
+
+SELECT *
+FROM emp
+WHERE DATEDIFF(CURDATE(), joindate) >= 25 * 365; -- Assuming 1 year = 365 days
+
+-- Q21 List the ‘Salesmen’ who have minimum 30 to 20 years of experience
+
+select * from emp;
+SELECT empcode, empname,desigcode='SLMN'
+FROM emp
+where timestampdiff(year,joindate,curdate())
+between 20 and 30 ;
+
+select empcode,empname,timestampdiff(year,joindate,curdate()) as exp from emp;
+
+-- Q22 . List the basic salary and half of the basic salary for each 
+
+employee.
+select * from emp;
+select basic , basic / 2 as half_salary
+from salary;
+
+-- Q 23 List the employees and the latest take-home-pay of each employee.
+
+ (Hint: Take-home-pay = basic + allowance - deductions)
+
+select empname, (basic+allow-deduct) as take_home_pay
+from emp join salary
+on emp.empcode=salary.empcode;
+
+-- Q 24 . List the employees and the latest take-home-pay of each employee of ‘Accounts’ department
+
+select distinct deptcode, empname, (basic+allow-deduct) as take_home_pay
+from emp join salary
+on emp.empcode=salary.empcode where deptcode='ACCT';
+
+-- Q 25 . List employees and their respective ages.
+
+select empname, timestampdiff(year,birthdate,curdate()) as ages
+from emp;
+
+-- Q 26  List all the ‘Accounts’ department employees, first ordered by their age and then by their names
+
+select timestampdiff(year,birthdate,curdate()) as age,empname
+from emp
+where deptcode='ACCT' order by age,empname;
+
+-- Q 27  List the number of employees directly reporting to ‘Reddy’
+
+select * from emp;
+select count(empname) from emp
+where supcode=7839;
+
+
+-- Q 28 . List the employees who have atleast one person working under him/her and the number of their subordinates. List the employee with highest number of subordinates first, next the person with next highest number of subordinates and so on.
+
+select e1.empname as employeename, count(e2.empcode) as NO_of_members from emp e1
+join emp e2 on e1.empcode=e2.supcode
+group by e1.empcode,e1.empname
+having count(e2.empcode) >= 1
+order by NO_of_members desc;
+
+-- Q 29  List the employees who have minimum 3 employees working under him/her.
+
+SELECT e1.empcode, e1.empname
+FROM emp e1
+LEFT JOIN (
+    SELECT supcode, COUNT(*) AS num_subordinates
+    FROM emp
+    GROUP BY supcode
+) e2 ON e1.empcode = e2.supcode
+WHERE e2.num_subordinates >= 3;
+
+-- Q 30  . List the minimum and maximum salaries drawn in each grade code
+
+SELECT gradecode, MIN(basic) AS min_salary, MAX(basic) AS max_salary
+FROM grade
+GROUP BY gradecode;
+
+-- Q 31  List the employees with names of their supervisors (Hint: Use Join).
+
+select * from emp;
+SELECT e.empname AS employee_name, s.empname AS supervisor_name
+FROM emp e
+LEFT JOIN emp s ON e.supcode = s.empcode;
+
+
+-- Q 32  List the number of officers reporting to each supervisor having more than 3 people working under them
+
+select e1.empcode as supervisor_id, e1.empname as supervisor_name,count(e2.empname) as members from emp e1
+join emp e2
+on e1.empcode=e2.supcode
+group by e1.empcode,e1.empname
+having count(e2.empname) >=3;
+
+
+-- Q 33 . List the employees who have not got any promotion till now.
+
+select * from history;
+SELECT emp.empcode, emp.empname
+FROM emp
+LEFT JOIN history ON emp.empcode = history.empcode
+WHERE history.empcode IS NULL;
+
+
+-- Q 34 . List the employee with maximum number of promotions. Also list the number of promotions that he/she got.
+
+SELECT emp.empcode, emp.empname, COUNT(history.empcode) AS num_promotions
+FROM emp
+LEFT JOIN history ON emp.empcode = history.empcode
+GROUP BY emp.empcode
+ORDER BY num_promotions DESC
+LIMIT 1;
+
+
+
+-- Q 35 List the employees who got promoted in the year 1991.
+
+SELECT emp.empcode, emp.empname
+FROM emp
+INNER JOIN history ON emp.empcode = history.empcode
+WHERE YEAR(history.changedate) = 1991;
+
+-- Q 36 . List the department budget and the total salary drawn (by the employees of this department)
+
+select dept.budget,dept.deptname,emp.basicpay
+from dept
+join emp
+on dept.deptcode=emp.deptcode
+group by dept.budget,dept.deptname,emp.basicpay;
+
+-- Q 37  Display the employee names in full uppercase.
+
+select upper(empname)
+from emp;
+
+-- Q 38  List all the employees drawing salary higher than the salary drawn by ‘Jain’
+
+SELECT empname, basicpay
+FROM emp
+WHERE basicpay > (SELECT basicpay FROM emp WHERE empname = 'Jain');
+
+-- Q 39 . List all the employees who have higher salary than all the employees who draw salary in the range of 11000 to 12000.
+
+select empname,basicpay 
+from emp 
+where basicpay > (select max(basicpay) from emp
+where basicpay between 11000 and 12000);
+
+-- Q 40 List all the employees who have greater than average pay. Display the result in the increasing order of the salary
+
+select empname from emp where basicpay >(select avg(basicpay)
+from emp
+order by basicpay asc);
+
+-- Q 41  List the employees who draws highest salary
+
+select empname from emp where basicpay=(
+select max(basicpay) from emp);
+
+-- Q 42  List all the employees other than the employees who draw highest salary
+
+select empname,basicpay from emp where basicpay not in(
+select max(basicpay) from emp);
+
+
+
+-- Q 43 List the employees who draw highest salary in each department
+
+select deptcode, basicpay from emp where basicpay in(
+select max(basicpay) 
+from emp
+group by deptcode);
+
+-- Q 44 List the employee(s) getting second highest salary
+
+select empname,basicpay from emp where basicpay=(
+select max(basicpay) from emp where basicpay < (select max(basicpay) from emp));
+
+-- Q 45 List the employee(s) who are getting fifth highest salary.
+
+select basicpay from emp
+order by basicpay desc
+limit 1 offset 5;
+
+-- Q 46  List the female employee who draws the highest salary higher than any other female employee
+
+select empname,basicpay from emp where basicpay=(
+select max(basicpay) from emp
+where sex='F');
+
+
+-- Q 47  List the department name of the female employee who draws the highest salary higher than any other female employee
+
+select empname,basicpay,deptcode from emp where basicpay=(
+select max(basicpay) from emp where sex='F');
+
+
+
+-- Q 48 . List the department manager of the department, in which the female employee who draws the highest salary higher than any other female employee works in
+
+SELECT emp.empcode, emp.empname, dept.deptname
+FROM emp
+JOIN dept ON emp.deptcode = dept.deptcode
+WHERE emp.sex = 'F' AND emp.basicpay = (
+    SELECT MAX(emp1.basicpay)
+    FROM emp AS emp1
+    WHERE emp1.sex = 'F'
+) AND dept.deptcode = (
+    SELECT emp2.deptcode
+    FROM emp AS emp2
+    WHERE emp2.sex = 'F' AND emp2.basicpay = (
+        SELECT MAX(emp3.basicpay)
+        FROM emp AS emp3
+        WHERE emp3.sex = 'F'
+    )
+)
+AND emp.desigcode = 'MNGR';
+
+
+
+
+-- Q 49 . List all male employees who draw salary greater than atleast on female employee
+
+select empname,basicpay from emp where basicpay=(
+select max(basicpay) from emp
+where sex='M');
+
+-- Q 50  List the departments in which average salary of employees is more than average salary of the company
+SELECT dept.deptcode, dept.deptname
+FROM dept
+JOIN emp ON dept.deptcode = emp.deptcode
+GROUP BY dept.deptcode, dept.deptname
+HAVING AVG(emp.basicpay) > (
+    SELECT AVG(basicpay)
+    FROM emp
+);
+
+-- Q 51  List the employees drawing salary lesser than the average salary of employees working for ‘accounts’ department
+
+SELECT empcode, empname, basicpay
+FROM emp
+WHERE basicpay < (
+    SELECT AVG(basicpay)
+    FROM emp
+    WHERE deptcode = 'ACCT'
+);
+
+SECTION 3:-
+
+
+-- Q1 Write a view to compute the employee age of the organization
+create view organization_age as 
+
+select empname, timestampdiff(year,birthdate,curdate()) as ages
+from emp;
+
+select * from organization_age;
+
+-- Q2  Write a view to compute the employee experience with the organization
+
+create view emp_exp as
+select empname,timestampdiff(year,joindate,curdate()) as experience
+from emp;
+
+select * from emp_exp;
+
+
+
+-- Q3 . Write a view that computes the employee pay for the current month for all the employees. Hint: Compute the employee pay as the
+
+Basic+Allowance-Deduction
+CREATE VIEW emp_pay as
+SELECT e.empname,(s.basic+s.allow-s.deduct) as cur_salary
+FROM emp e
+JOIN salary s
+ON e.empcode=s.empcode;
+select * from emp_pay;
+
+--  Q4  List the employees who are older than their supervisors. Hint: Use views to implement employee age
+
+CREATE VIEW employee_age AS
+SELECT empcode, empname, birthdate, TIMESTAMPDIFF(YEAR, birthdate, CURDATE()) AS age
+FROM emp;
+SELECT * FROM employee_age;
+
+-- Q5 . Write a view to display the total ncreumber of employees in each department
+
+CREATE VIEW display_emp as
+SELECT deptcode,count(empname) AS total_no_of_employees 
+FROM emp
+GROUP BY deptcode;
+SELECT * from display_emp;
+
+-- Q6 Write a view to display the total number of employees in the organization
+
+CREATE VIEW total_employee AS 
+SELECT count(empname) 
+FROM emp;
+SELECT * FROM total_employee;
+
+-- Q7. Use the views in Qn No 5 & Qn No 6, to display the percentage of employees in each department 
+
+CREATE VIEW per_emp as
+SELECT e.deptname, e.empname , ((e.c_empname/n.count)*100) 
+AS per_emp  FROM count_dept_account e JOIN number_emp n ON 1=1//
+SELECT * FROM per_emp//
+
+
+
+SECTION 4:-
+
+
+
+-- Q1 Create emp_index on table emp on the field birthdate.
+
+create index emp_index on emp (birthdate);
+show indexes from emp;
+
+-- Q2 Create unique index dept_index on table dept on the field deptname.
+
+create unique index dept_index 
+on dept (deptname);
+show indexes from dept;
+
+-- Q3 Create students table, with filed id, name, age, gender, index on id 
+
+create table students(
+field_id int ,
+name varchar(20),
+gender varchar(1),
+age int
+);
+DESC students;
+create index id_index on students (field_id);
+show indexes from students;
+
+-- Q4  Drop index of table emp
+
+alter table emp
+drop index emp_index;
+
+-- Q5  Find all the index of table dept
+
+show indexes from dept;
+
+-- Q6  Create a temporary table student with field with filed id, name, age, gender
+
+CREATE temporary table temp_student
+select * from students;
+
+-- Q7  Logout from session and login again to check if temporary table exists.
+
+describe temp_student;
+
+-- Logged out from session and login again and try to describe the temporary table name as "temp-student" but there is error saying that "Error Code: 1146. Table 'dbda.temp_student' doesn't exist	0.000 sec". so conclusion is we can't acces the temporary table after logged out.
+
+-- Q8  Create a temporary table test
+
+create temporary table test(
+id int,
+name varchar(20),
+marks1 int,
+marks2 int
+);
+
+DESC test;
+
+-- Q9  Drop temporary table test
+
+DROP temporary table test;
